@@ -22,7 +22,11 @@
                     <a href="{% url 'newpage' %}">Create New Page</a>
                 </div>
                 <div>
-                    Random Page
+                    <a href="{% url 'randompage' %}">Random Page</a>
+                </div>
+                <div>
+                    {% block edit %}
+                    {% endblock %}
                 </div>
                 {% block nav %}
                 {% endblock %}

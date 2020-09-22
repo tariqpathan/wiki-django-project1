@@ -1,3 +1,5 @@
+import markdown2
+import random
 import re
 from django.shortcuts import render, redirect
 from django.core.exceptions import ValidationError
@@ -16,7 +18,7 @@ class NewPageForm(forms.Form):
         return title
 
 class EditPageForm(forms.Form):
-    text = forms.CharField(label="Text")
+    text = forms.CharField(label="Text", widget=forms.Textarea)
     # populate with existing text
 
 def index(request):
@@ -44,7 +46,7 @@ def topic(request, title):
         """ Will get a text file returned - convert markdown to html """
         return render(request, "encyclopedia/topic.html", {
             "title": match.group(1),
-            "text": text
+            "text": markdown2.markdown(text)
         })
     else:
         return render(request, "encyclopedia/error.html")
@@ -56,17 +58,8 @@ def newpage(request):
         
         if form.is_valid():
             title = form.cleaned_data["title"]
-            # entries = util.list_entries()
-        
-            # if title.lower() in [s.lower() for s in entries]:
-            #     raise forms.ValidationError('Title already exists')
-            #     # return render(request, "encyclopedia/newpage.html", {
-            #     #     "form": form
-            #     # })
-
-            # else:
             text = form.cleaned_data["text"]
-            print(text)
+            util.save_entry(title, text)
             # save the entry and redirect to new topic
             return redirect(topic, title)
 
@@ -78,3 +71,28 @@ def newpage(request):
     return render(request, "encyclopedia/newpage.html", {
         "form": NewPageForm()
     })
+
+def randompage(request):
+    title = random.choice(util.list_entries())
+    return redirect(topic, title)
+
+def editpage(request, title):
+    if request.method == "POST":
+        form = EditPageForm(request.POST)
+        if form.is_valid():
+            text = form.cleaned_data["text"]
+            util.save_entry(title, text)
+            return redirect(topic, title)
+        else:
+            return render(request, "encyclopedia/edit.html", {
+                "form": form
+            })
+    else:
+        text = util.get_entry(title)
+        form = EditPageForm(initial={
+            "text": text
+        })
+        return render(request, "encyclopedia/edit.html", {
+            "title": title,
+            "form": form
+        })

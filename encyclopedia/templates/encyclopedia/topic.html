@@ -14,3 +14,11 @@
     </p>
 
 {% endblock %}
+
+{% block edit %}
+    <p>
+        <a href="{% url 'editpage' title=title %}">Edit</a>
+    </p>
+
+{% endblock %}
+
